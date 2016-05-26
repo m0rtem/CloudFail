@@ -15,7 +15,8 @@ colorama.init()
 def print_out(data):
 	time = datetime.datetime.now().time()
 	timewithoutseconds = time.replace(second=0, microsecond=0)
-	print(Style.NORMAL+"[",timewithoutseconds,"]",data+Style.RESET_ALL)
+	#print(Style.NORMAL+"[",timewithoutseconds,"]",data+Style.RESET_ALL)
+	print(Style.NORMAL+"->",data+Style.RESET_ALL)
 
 def ip_in_subnetwork(ip_address, subnetwork):
  
@@ -120,8 +121,13 @@ parser.add_argument("target", help="target url of website", type=str)
 args = parser.parse_args()
 
 print_out (Fore.CYAN + "Fetching initial information from: "+args.target+"...")
-	
-ip = socket.gethostbyname(args.target)
+
+try:
+	ip = socket.gethostbyname(args.target)
+except NetworkException as net_exc:
+	print ("error parsing stream", net_exc)
+	sys.exit(0)
+
 print_out(Fore.CYAN + "Server IP: "+ip)
 print_out(Fore.CYAN + "Testing if "+ip+" is on the Cloudflare subnet...")
 
@@ -161,7 +167,7 @@ if res['dns_records']['mx']:
 	for entry in res['dns_records']['mx']:
 		provider = str(entry['provider'])
 		if "CloudFlare" not in provider:
-			print_out(Style.BRIGHT+Fore.GREEN+"{ip} {as} {provider} {country}".format(**entry))
+			print_out(Style.BRIGHT+Fore.GREEN+"{ip} {as} {provider} {country} {domain}".format(**entry))
 	
 if res['dns_records']['host']:
 	print_out (Fore.CYAN + "Looking for HOSTS...")
