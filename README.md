@@ -1,9 +1,10 @@
 # CloudFail
 
 CloudFail is a tactical reconnaissance tool which aims to gather enough information about a target protected by CloudFlare in the hopes of discovering the location of the server. Using TOR to mask all requests, the tool as of right now has 3 different attack phases.
-	1. Misconfigured DNS scan using DNSDumpster.com
-	2. Scan the Crimeflare.com database
-	3. Bruteforce scan over 2500 subdomains
+
+1. Misconfigured DNS scan using DNSDumpster.com.
+2. Scan the Crimeflare.com database.
+3. Bruteforce scan over 2500 subdomains.
 
 
 
