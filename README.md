@@ -18,11 +18,11 @@ The author bears no responsibility for any misuse of the tool.
 
 To run a scan against a target:
 
-```python crimeflare.py --target seo.com```
+```python cloudfail.py --target seo.com```
 
 To run a scan against a target using TOR:
 
-```python crimeflare.py --target seo.com --tor```
+```python cloudfail.py --target seo.com --tor```
 
 
 ####Dependencies
