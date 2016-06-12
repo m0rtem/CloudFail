@@ -31,7 +31,6 @@ To run a scan against a target using Tor:
 
 ####Dependencies
 **Python3**
-
 * argparse
 * colorama
 * socket
