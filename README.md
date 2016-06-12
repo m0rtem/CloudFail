@@ -23,3 +23,16 @@ To run a scan against a target:
 To run a scan against a target using TOR:
 
 ```python crimeflare.py --target seo.com --tor```
+
+
+####Dependencies
+**Python3**
+
+* mmap
+* argparse
+* colorama
+* socket
+* binascii
+* datetime
+* socks
+* requests
