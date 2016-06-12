@@ -2,20 +2,20 @@
 import mmap
 import argparse
 import sys
-from DNSDumpsterAPI import DNSDumpsterAPI
-import colorama
-from colorama import Fore, Back, Style
 import socket
 import binascii
 import datetime
 import socks
 import requests
+import colorama
+from colorama import Fore, Back, Style
+from DNSDumpsterAPI import DNSDumpsterAPI
 
 colorama.init(Style.BRIGHT)
 
 def print_out(data):
-	datetimestr = str(datetime.datetime.strftime(datetime.datetime.now(), '%d/%m/%Y %H:%M:%S'))
-	print(Style.NORMAL+"["+datetimestr+"]",data+Style.RESET_ALL)
+	datetimestr = str(datetime.datetime.strftime(datetime.datetime.now(), '%H:%M:%S'))
+	print(Style.NORMAL+"["+datetimestr+"] "+data+Style.RESET_ALL)
 
 def ip_in_subnetwork(ip_address, subnetwork):
 
@@ -190,6 +190,8 @@ logo = """\
 """
 
 print(Fore.RED+Style.BRIGHT+logo+Fore.RESET)
+datetimestr = str(datetime.datetime.strftime(datetime.datetime.now(), '%d/%m/%Y %H:%M:%S'))
+print_out("Initializing CloudFail - the date/time is: "+datetimestr)
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--target", help="target url of website", type=str)
