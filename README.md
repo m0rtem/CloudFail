@@ -35,5 +35,4 @@ To run a scan against a target using Tor:
 * socket
 * binascii
 * datetime
-* socks
 * requests
