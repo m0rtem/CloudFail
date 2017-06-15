@@ -8,12 +8,12 @@ CloudFail is a tactical reconnaissance tool which aims to gather enough informat
 
 ![Example usage](http://puu.sh/pq7vH/62d56aa41f.png "Example usage")
 
-####Disclaimer
+#### Disclaimer
 This tool is only for academic purposes and testing  under controlled environments. Do not use without obtaining proper authorization
 from the network owner of the network under testing.
 The author bears no responsibility for any misuse of the tool.
 
-####Usage
+#### Usage
 
 To run a scan against a target:
 
@@ -28,7 +28,7 @@ To run a scan against a target using Tor:
 ```python cloudfail.py --target seo.com --tor```
 
 
-####Dependencies
+#### Dependencies
 **Python3**
 * argparse
 * colorama
