@@ -117,7 +117,11 @@ def crimeflare(target):
 		print_out("Did not find anything.")
 		
 def init(target):
-	print_out (Fore.CYAN + "Fetching initial information from: "+args.target+"...")
+	if args.target:
+		print_out(Fore.CYAN + "Fetching initial information from: "+args.target+"...")
+	else:
+		print_out(Fore.RED + "No target set, exiting")
+		sys.exit(1)
 
 	try:
 		ip = socket.gethostbyname(args.target)
