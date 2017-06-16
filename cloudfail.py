@@ -7,6 +7,9 @@ import datetime
 import socks
 import requests
 import colorama
+import zipfile
+import os
+
 from colorama import Fore, Back, Style
 from DNSDumpsterAPI import DNSDumpsterAPI
 
@@ -179,6 +182,29 @@ def subdomain_scan(target):
 			print_out(Fore.CYAN + "Scanning finished, we did not find anything sorry...");
 		else:
 			print_out(Fore.CYAN + "Scanning finished...");
+
+def update():
+	print_out(Fore.CYAN + "Just checking for updates, please wait...");
+	print_out(Fore.CYAN + "Updating CloudFlare subnet...");
+	if(args.tor == False):
+		headers = {'User-Agent': 'Mozilla/5.0 (Windows; U; Windows NT 5.1; it; rv:1.8.1.11) Gecko/20071127 Firefox/2.0.0.11'}
+		r = requests.get("https://www.cloudflare.com/ips-v4", headers=headers, cookies={'__cfduid': "d7c6a0ce9257406ea38be0156aa1ea7a21490639772"}, stream=True)
+		with open('data/cf-subnet.txt', 'wb') as fd:
+			for chunk in r.iter_content(4000):
+				fd.write(chunk)
+	else:
+		print_out(Fore.RED + Style.BRIGHT+"Unable to fetch CloudFlare subnet while TOR is active")
+	print_out(Fore.CYAN + "Updating Crimeflare database...");
+	r = requests.get("http://crimeflare.net:82/domains/ipout.zip", stream=True)
+	with open('data/ipout.zip', 'wb') as fd:
+		for chunk in r.iter_content(4000):
+			fd.write(chunk)
+	zip_ref = zipfile.ZipFile("data/ipout.zip", 'r')
+	zip_ref.extractall("data/")
+	zip_ref.close()
+	os.remove("data/ipout.zip")
+
+	
 				
 # END FUNCTIONS
 
@@ -198,9 +224,11 @@ print_out("Initializing CloudFail - the date/time is: "+datetimestr)
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--target", help="target url of website", type=str)
+parser.add_argument('--update', dest='update', action='store_true', help="update databases")
 parser.add_argument('--tor', dest='tor', action='store_true', help="whether to route traffic through TOR or not")
 parser.add_argument('--no-tor', dest='tor', action='store_false', help="whether to route traffic through TOR or not")
 parser.set_defaults(tor=False)
+parser.set_defaults(update=False)
 
 args = parser.parse_args()
 
@@ -218,7 +246,13 @@ if(args.tor == True):
 	except requests.exceptions.RequestException as e:
 		print (e, net_exc)
 		sys.exit(0)
+
+if(args.update == True):
+	update()
+
+
 try:
+
     # Initialize CloudFaile
 	init(args.target)
 		
