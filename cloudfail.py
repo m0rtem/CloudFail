@@ -128,8 +128,8 @@ def init(target):
 
 	try:
 		ip = socket.gethostbyname(args.target)
-	except NetworkException as net_exc:
-		print ("error parsing stream", net_exc)
+	except socket.gaierror:
+		print_out(Fore.RED + "Domain is not valid, exiting")
 		sys.exit(0)
 
 	print_out(Fore.CYAN + "Server IP: "+ip)
