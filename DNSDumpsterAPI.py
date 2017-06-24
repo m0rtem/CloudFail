@@ -5,9 +5,9 @@ Using this code, you can retrieve subdomains
 """
 from __future__ import print_function
 
-import requests
 import re
 import sys
+import requests
 
 from bs4 import BeautifulSoup
 
@@ -19,10 +19,9 @@ class DNSDumpsterAPI(object):
     def __init__(self, verbose=False):
         self.verbose = verbose
 
-    def display_message(self, s):
+    def display_message(self, string):
         if self.verbose:
-            print('[verbose] %s' % s)
-
+            print('[verbose] %s' % string)
 
     def retrieve_results(self, table):
         res = []
@@ -47,7 +46,6 @@ class DNSDumpsterAPI(object):
         for td in table.findAll('td'):
             res.append(td.text)
         return res
-
 
     def search(self, domain):
         dnsdumpster_url = 'https://dnsdumpster.com/'
@@ -78,9 +76,7 @@ class DNSDumpsterAPI(object):
         soup = BeautifulSoup(req.content, 'html.parser')
         tables = soup.findAll('table')
 
-        res = {}
-        res['domain'] = domain
-        res['dns_records'] = {}
+        res = {'domain': domain, 'dns_records': {}}
         res['dns_records']['dns'] = self.retrieve_results(tables[0])
         res['dns_records']['mx'] = self.retrieve_results(tables[1])
         res['dns_records']['txt'] = self.retrieve_txt_record(tables[2])
