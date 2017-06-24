@@ -143,24 +143,25 @@ def init(target):
     print_out(Fore.CYAN + "Server IP: " + ip)
     print_out(Fore.CYAN + "Testing if " + args.target + " is on the Cloudflare network...")
 
-    ifIpIsWithin = inCloudFlare(ip)
+    try:
+        ifIpIsWithin = inCloudFlare(ip)
 
-    if ifIpIsWithin:
-        print_out(Style.BRIGHT + Fore.GREEN + args.target + " is part of the Cloudflare network!")
-    else:
-        print_out(Fore.RED + args.target + " is not part of the Cloudflare network, quitting...")
+        if ifIpIsWithin:
+            print_out(Style.BRIGHT + Fore.GREEN + args.target + " is part of the Cloudflare network!")
+        else:
+            print_out(Fore.RED + args.target + " is not part of the Cloudflare network, quitting...")
+            sys.exit(0)
+    except ValueError:
+        print_out(Fore.RED + "IP address does not appear to be within Cloudflare range, shutting down..")
         sys.exit(0)
 
 
 def inCloudFlare(ip):
-    with open('data/cf-subnet.txt') as f:
+    with open('{}/data/cf-subnet.txt'.format(os.getcwd())) as f:
         for line in f:
             isInNetwork = ip_in_subnetwork(ip, line)
             if isInNetwork:
                 return True
-            else:
-
-                continue
         return False
 
 
