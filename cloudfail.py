@@ -126,6 +126,11 @@ def init(target):
 		print_out(Fore.RED + "No target set, exiting")
 		sys.exit(1)
 
+	if not os.path.isfile("data/ipout"):
+		print_out(Fore.CYAN + "No ipout file found, fetching data")
+		update()
+		print_out(Fore.CYAN + "ipout file created")
+
 	try:
 		ip = socket.gethostbyname(args.target)
 	except socket.gaierror:
