@@ -104,10 +104,6 @@ def dnsdumpster(target):
                     Style.BRIGHT + Fore.WHITE + "[FOUND:MX] " + Fore.GREEN + "{ip} {as} {provider} {domain}".format(
                         **entry))
 
-            # if res['dns_records']['txt']:
-            # for entry in res['dns_records']['txt']:
-            # print_out (entry)
-
 
 def crimeflare(target):
     print_out(Fore.CYAN + "Scanning crimeflare database...")
@@ -133,6 +129,11 @@ def init(target):
     else:
         print_out(Fore.RED + "No target set, exiting")
         sys.exit(1)
+        
+    if not os.path.isfile("data/ipout"):
+		    print_out(Fore.CYAN + "No ipout file found, fetching data")
+		    update()
+		    print_out(Fore.CYAN + "ipout file created")
 
     try:
         ip = socket.gethostbyname(args.target)
@@ -166,60 +167,56 @@ def inCloudFlare(ip):
 
 
 def subdomain_scan(target):
-    i = 0
-    with open("data/subdomains.txt", "r") as wordlist:
-        numOfLines = len(open("data/subdomains.txt").readlines())
-        numOfLines = str(numOfLines)
-        print_out(Fore.CYAN + "Scanning " + numOfLines + " subdomains, please wait...")
-        for word in wordlist:
-            subdomain = "{}.{}".format(word.strip(), target)
-            try:
-                target_http = requests.get("http://" + subdomain)
-                target_http = str(target_http.status_code)
-                ip = socket.gethostbyname(subdomain)
-                ifIpIsWithin = inCloudFlare(ip)
+	i = 0
+	with open("data/subdomains.txt", "r") as wordlist:
+		numOfLines = len(open("data/subdomains.txt").readlines(  ))
+		numOfLinesInt = numOfLines
+		numOfLines = str(numOfLines)
+		print_out(Fore.CYAN + "Scanning "+numOfLines+" subdomains, please wait...")
+		for word in wordlist:
+			subdomain = "{}.{}".format(word.strip(), target)
+			try:
+				target_http = requests.get("http://"+subdomain)
+				target_http = str(target_http.status_code)
+				ip = socket.gethostbyname(subdomain)
+				ifIpIsWithin = inCloudFlare(ip)
+								
+				if not ifIpIsWithin:
+					i += 1
+					print_out(Style.BRIGHT+Fore.WHITE+"[FOUND:SUBDOMAIN] "+Fore.GREEN + "FOUND: " + subdomain + " IP: " + ip + " HTTP: " + target_http)
+				else:
+					print_out(Style.BRIGHT+Fore.WHITE+"[FOUND:SUBDOMAIN] "+Fore.RED + "FOUND: " + subdomain + " ON CLOUDFLARE NETWORK!")
+					continue
 
-                if not ifIpIsWithin:
-                    i += 1
-                    print_out(
-                        Style.BRIGHT + Fore.WHITE + "[FOUND:SUBDOMAIN] " + Fore.GREEN + "FOUND: " + subdomain + " IP: " + ip + " HTTP: " + target_http)
-                else:
-                    print_out(
-                        Style.BRIGHT + Fore.WHITE + "[FOUND:SUBDOMAIN] " + Fore.RED + "FOUND: " + subdomain + " ON CLOUDFLARE NETWORK!")
-                    continue
-
-            except requests.exceptions.RequestException as e:
-                continue
-        if (i == 0):
-            print_out(Fore.CYAN + "Scanning finished, we did not find anything sorry...");
-        else:
-            print_out(Fore.CYAN + "Scanning finished...");
-
+			except requests.exceptions.RequestException as e:
+				continue
+		if(i == 0):
+			print_out(Fore.CYAN + "Scanning finished, we did not find anything sorry...");
+		else:
+			print_out(Fore.CYAN + "Scanning finished...");
 
 def update():
-    print_out(Fore.CYAN + "Just checking for updates, please wait...");
-    print_out(Fore.CYAN + "Updating CloudFlare subnet...");
-    if (args.tor == False):
-        headers = {
-            'User-Agent': 'Mozilla/5.0 (Windows; U; Windows NT 5.1; it; rv:1.8.1.11) Gecko/20071127 Firefox/2.0.0.11'}
-        r = requests.get("https://www.cloudflare.com/ips-v4", headers=headers,
-                         cookies={'__cfduid': "d7c6a0ce9257406ea38be0156aa1ea7a21490639772"}, stream=True)
-        with open('data/cf-subnet.txt', 'wb') as fd:
-            for chunk in r.iter_content(4000):
-                fd.write(chunk)
-    else:
-        print_out(Fore.RED + Style.BRIGHT + "Unable to fetch CloudFlare subnet while TOR is active")
-    print_out(Fore.CYAN + "Updating Crimeflare database...");
-    r = requests.get("http://crimeflare.net:82/domains/ipout.zip", stream=True)
-    with open('data/ipout.zip', 'wb') as fd:
-        for chunk in r.iter_content(4000):
-            fd.write(chunk)
-    zip_ref = zipfile.ZipFile("data/ipout.zip", 'r')
-    zip_ref.extractall("data/")
-    zip_ref.close()
-    os.remove("data/ipout.zip")
-
-
+	print_out(Fore.CYAN + "Just checking for updates, please wait...");
+	print_out(Fore.CYAN + "Updating CloudFlare subnet...");
+	if(args.tor == False):
+		headers = {'User-Agent': 'Mozilla/5.0 (Windows; U; Windows NT 5.1; it; rv:1.8.1.11) Gecko/20071127 Firefox/2.0.0.11'}
+		r = requests.get("https://www.cloudflare.com/ips-v4", headers=headers, cookies={'__cfduid': "d7c6a0ce9257406ea38be0156aa1ea7a21490639772"}, stream=True)
+		with open('data/cf-subnet.txt', 'wb') as fd:
+			for chunk in r.iter_content(4000):
+				fd.write(chunk)
+	else:
+		print_out(Fore.RED + Style.BRIGHT+"Unable to fetch CloudFlare subnet while TOR is active")
+	print_out(Fore.CYAN + "Updating Crimeflare database...");
+	r = requests.get("http://crimeflare.net:82/domains/ipout.zip", stream=True)
+	with open('data/ipout.zip', 'wb') as fd:
+		for chunk in r.iter_content(4000):
+			fd.write(chunk)
+	zip_ref = zipfile.ZipFile("data/ipout.zip", 'r')
+	zip_ref.extractall("data/")
+	zip_ref.close()
+	os.remove("data/ipout.zip")
+	
+				
 # END FUNCTIONS
 
 logo = """\
@@ -266,7 +263,7 @@ if args.update is True:
 
 try:
 
-    # Initialize CloudFaile
+    # Initialize CloudFail
     init(args.target)
 
     # Scan DNSdumpster.com
@@ -277,5 +274,6 @@ try:
 
     # Scan subdomains with or without TOR
     subdomain_scan(args.target)
+
 except KeyboardInterrupt:
     sys.exit(0)
