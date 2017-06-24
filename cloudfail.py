@@ -159,6 +159,7 @@ def subdomain_scan(target):
 	i = 0
 	with open("data/subdomains.txt", "r") as wordlist:
 		numOfLines = len(open("data/subdomains.txt").readlines(  ))
+		numOfLinesInt = numOfLines
 		numOfLines = str(numOfLines)
 		print_out(Fore.CYAN + "Scanning "+numOfLines+" subdomains, please wait...")
 		for word in wordlist:
@@ -170,7 +171,7 @@ def subdomain_scan(target):
 				ifIpIsWithin = inCloudFlare(ip)
 								
 				if not ifIpIsWithin:
-					i+= 1
+					i += 1
 					print_out(Style.BRIGHT+Fore.WHITE+"[FOUND:SUBDOMAIN] "+Fore.GREEN + "FOUND: " + subdomain + " IP: " + ip + " HTTP: " + target_http)
 				else:
 					print_out(Style.BRIGHT+Fore.WHITE+"[FOUND:SUBDOMAIN] "+Fore.RED + "FOUND: " + subdomain + " ON CLOUDFLARE NETWORK!")
@@ -203,7 +204,6 @@ def update():
 	zip_ref.extractall("data/")
 	zip_ref.close()
 	os.remove("data/ipout.zip")
-
 	
 				
 # END FUNCTIONS
@@ -253,7 +253,7 @@ if(args.update == True):
 
 try:
 
-    # Initialize CloudFaile
+	# Initialize CloudFail
 	init(args.target)
 		
 	# Scan DNSdumpster.com
@@ -264,5 +264,6 @@ try:
 
 	# Scan subdomains with or without TOR
 	subdomain_scan(args.target)
+	
 except KeyboardInterrupt:
     sys.exit(0)
