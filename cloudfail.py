@@ -167,39 +167,48 @@ def inCloudFlare(ip):
         return False
 
 
-def subdomain_scan(target):
+def subdomain_scan(target, subdomains):
     i = 0
     c = 0
-    with open("data/subdomains.txt", "r") as wordlist:
-        numOfLines = len(open("data/subdomains.txt").readlines(  ))
-        numOfLinesInt = numOfLines
-        numOfLines = str(numOfLines)
-        print_out(Fore.CYAN + "Scanning " + numOfLines + " subdomains, please wait...")
-        for word in wordlist:
-            c += 1
-            if (c % int((float(numOfLinesInt) / 100.0))) == 0:
-                print_out(Fore.CYAN + str(round((c / float(numOfLinesInt)) * 100.0, 2)) + "% complete", '\r')
+    if subdomains:
+    	subdomainsList = subdomains
+    else:
+    	subdomainsList = "subdomains.txt"
+    try:
+        with open("data/" + subdomainsList, "r") as wordlist:
+            numOfLines = len(open("data/subdomains.txt").readlines(  ))
+            numOfLinesInt = numOfLines
+            numOfLines = str(numOfLines)
+            print_out(Fore.CYAN + "Scanning " + numOfLines + " subdomains (" + subdomainsList + "), please wait...")
+            for word in wordlist:
+                c += 1
+                if (c % int((float(numOfLinesInt) / 100.0))) == 0:
+                    print_out(Fore.CYAN + str(round((c / float(numOfLinesInt)) * 100.0, 2)) + "% complete", '\r')
 
-            subdomain = "{}.{}".format(word.strip(), target)
-            try:
-                target_http = requests.get("http://"+subdomain)
-                target_http = str(target_http.status_code)
-                ip = socket.gethostbyname(subdomain)
-                ifIpIsWithin = inCloudFlare(ip)
+                subdomain = "{}.{}".format(word.strip(), target)
+                try:
+                    target_http = requests.get("http://"+subdomain)
+                    target_http = str(target_http.status_code)
+                    ip = socket.gethostbyname(subdomain)
+                    ifIpIsWithin = inCloudFlare(ip)
 
-                if not ifIpIsWithin:
-                    i += 1
-                    print_out(Style.BRIGHT+Fore.WHITE+"[FOUND:SUBDOMAIN] "+Fore.GREEN + "FOUND: " + subdomain + " IP: " + ip + " HTTP: " + target_http)
-                else:
-                    print_out(Style.BRIGHT+Fore.WHITE+"[FOUND:SUBDOMAIN] "+Fore.RED + "FOUND: " + subdomain + " ON CLOUDFLARE NETWORK!")
+                    if not ifIpIsWithin:
+                        i += 1
+                        print_out(Style.BRIGHT+Fore.WHITE+"[FOUND:SUBDOMAIN] "+Fore.GREEN + subdomain + " IP: " + ip + " HTTP: " + target_http)
+                    else:
+                        print_out(Style.BRIGHT+Fore.WHITE+"[FOUND:SUBDOMAIN] "+Fore.RED + subdomain + " ON CLOUDFLARE NETWORK!")
+                        continue
+
+                except requests.exceptions.RequestException as e:
                     continue
+            if(i == 0):
+                print_out(Fore.CYAN + "Scanning finished, we did not find anything sorry...")
+            else:
+                print_out(Fore.CYAN + "Scanning finished...")
 
-            except requests.exceptions.RequestException as e:
-                continue
-        if(i == 0):
-            print_out(Fore.CYAN + "Scanning finished, we did not find anything sorry...")
-        else:
-            print_out(Fore.CYAN + "Scanning finished...")
+    except IOError:
+        print_out(Fore.RED + "Subdomains file does not exist in data directory, aborting scan...")
+        sys.exit(1)
 
 def update():
     print_out(Fore.CYAN + "Just checking for updates, please wait...")
@@ -231,19 +240,19 @@ logo = """\
  | |   | |/ _ \| | | |/ _` | |_ / _` | | |
  | |___| | (_) | |_| | (_| |  _| (_| | | |
   \____|_|\___/ \__,_|\__,_|_|  \__,_|_|_|
-    v1.0                        by m0rtem
+    v1.0.1                      by m0rtem
 
 """
 
 print(Fore.RED + Style.BRIGHT + logo + Fore.RESET)
-datetimestr = str(datetime.datetime.strftime(datetime.datetime.now(), '%d/%m/%Y %H:%M:%S'))
-print_out("Initializing CloudFail - the date/time is: " + datetimestr)
+datestr = str(datetime.datetime.strftime(datetime.datetime.now(), '%d/%m/%Y'))
+print_out("Initializing CloudFail - the date is: " + datestr)
 
 parser = argparse.ArgumentParser()
 parser.add_argument("-t", "--target", help="target url of website", type=str)
-parser.add_argument("-T", '--tor', dest='tor', action='store_true', help="whether to route traffic through TOR or not")
-parser.add_argument('--update', dest='update', action='store_true', help="update databases")
-parser.add_argument('--no-tor', dest='tor', action='store_false', help="whether to route traffic through TOR or not")
+parser.add_argument("-T", "--tor", dest="tor", action="store_true", help="enable TOR routing")
+parser.add_argument("-u", "--update", dest="update", action="store_true", help="update databases")
+parser.add_argument("-s", "--subdomains", help="name of alternate subdomains list stored in the data directory", type=str)
 parser.set_defaults(tor=False)
 parser.set_defaults(update=False)
 
@@ -279,7 +288,7 @@ try:
     crimeflare(args.target)
 
     # Scan subdomains with or without TOR
-    subdomain_scan(args.target)
+    subdomain_scan(args.target, args.subdomains)
 
 except KeyboardInterrupt:
     sys.exit(0)
