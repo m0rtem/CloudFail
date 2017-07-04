@@ -9,6 +9,8 @@ import requests
 import colorama
 import zipfile
 import os
+import win_inet_pton
+import platform
 
 from colorama import Fore, Style
 from DNSDumpsterAPI import DNSDumpsterAPI
@@ -16,9 +18,9 @@ from DNSDumpsterAPI import DNSDumpsterAPI
 colorama.init(Style.BRIGHT)
 
 
-def print_out(data):
+def print_out(data, end='\n'):
     datetimestr = str(datetime.datetime.strftime(datetime.datetime.now(), '%H:%M:%S'))
-    print(Style.NORMAL + "[" + datetimestr + "] " + data + Style.RESET_ALL)
+    print(Style.NORMAL + "[" + datetimestr + "] " + data + Style.RESET_ALL,' ', end=end)
 
 
 def ip_in_subnetwork(ip_address, subnetwork):
@@ -34,9 +36,8 @@ def ip_in_subnetwork(ip_address, subnetwork):
 def ip_to_integer(ip_address):
     # try parsing the IP address first as IPv4, then as IPv6
     for version in (socket.AF_INET, socket.AF_INET6):
-
         try:
-            ip_hex = socket.inet_pton(version, ip_address)
+            ip_hex = win_inet_pton.inet_pton(version, ip_address) if platform == 'Windows' else socket.inet_pton(version, ip_address)
             ip_integer = int(binascii.hexlify(ip_hex), 16)
 
             return ip_integer, 4 if version == socket.AF_INET else 6
@@ -129,11 +130,11 @@ def init(target):
     else:
         print_out(Fore.RED + "No target set, exiting")
         sys.exit(1)
-        
+
     if not os.path.isfile("data/ipout"):
-		    print_out(Fore.CYAN + "No ipout file found, fetching data")
-		    update()
-		    print_out(Fore.CYAN + "ipout file created")
+            print_out(Fore.CYAN + "No ipout file found, fetching data")
+            update()
+            print_out(Fore.CYAN + "ipout file created")
 
     try:
         ip = socket.gethostbyname(args.target)
@@ -167,60 +168,65 @@ def inCloudFlare(ip):
 
 
 def subdomain_scan(target):
-	i = 0
-	with open("data/subdomains.txt", "r") as wordlist:
-		numOfLines = len(open("data/subdomains.txt").readlines(  ))
-		numOfLinesInt = numOfLines
-		numOfLines = str(numOfLines)
-		print_out(Fore.CYAN + "Scanning "+numOfLines+" subdomains, please wait...")
-		for word in wordlist:
-			subdomain = "{}.{}".format(word.strip(), target)
-			try:
-				target_http = requests.get("http://"+subdomain)
-				target_http = str(target_http.status_code)
-				ip = socket.gethostbyname(subdomain)
-				ifIpIsWithin = inCloudFlare(ip)
-								
-				if not ifIpIsWithin:
-					i += 1
-					print_out(Style.BRIGHT+Fore.WHITE+"[FOUND:SUBDOMAIN] "+Fore.GREEN + "FOUND: " + subdomain + " IP: " + ip + " HTTP: " + target_http)
-				else:
-					print_out(Style.BRIGHT+Fore.WHITE+"[FOUND:SUBDOMAIN] "+Fore.RED + "FOUND: " + subdomain + " ON CLOUDFLARE NETWORK!")
-					continue
+    i = 0
+    c = 0
+    with open("data/subdomains.txt", "r") as wordlist:
+        numOfLines = len(open("data/subdomains.txt").readlines(  ))
+        numOfLinesInt = numOfLines
+        numOfLines = str(numOfLines)
+        print_out(Fore.CYAN + "Scanning " + numOfLines + " subdomains, please wait...")
+        for word in wordlist:
+            c += 1
+            if (c % int((float(numOfLinesInt) / 100.0))) == 0:
+                print_out(Fore.CYAN + str(round((c / float(numOfLinesInt)) * 100.0, 2)) + "% complete", '\r')
 
-			except requests.exceptions.RequestException as e:
-				continue
-		if(i == 0):
-			print_out(Fore.CYAN + "Scanning finished, we did not find anything sorry...");
-		else:
-			print_out(Fore.CYAN + "Scanning finished...");
+            subdomain = "{}.{}".format(word.strip(), target)
+            try:
+                target_http = requests.get("http://"+subdomain)
+                target_http = str(target_http.status_code)
+                ip = socket.gethostbyname(subdomain)
+                ifIpIsWithin = inCloudFlare(ip)
+
+                if not ifIpIsWithin:
+                    i += 1
+                    print_out(Style.BRIGHT+Fore.WHITE+"[FOUND:SUBDOMAIN] "+Fore.GREEN + "FOUND: " + subdomain + " IP: " + ip + " HTTP: " + target_http)
+                else:
+                    print_out(Style.BRIGHT+Fore.WHITE+"[FOUND:SUBDOMAIN] "+Fore.RED + "FOUND: " + subdomain + " ON CLOUDFLARE NETWORK!")
+                    continue
+
+            except requests.exceptions.RequestException as e:
+                continue
+        if(i == 0):
+            print_out(Fore.CYAN + "Scanning finished, we did not find anything sorry...")
+        else:
+            print_out(Fore.CYAN + "Scanning finished...")
 
 def update():
-	print_out(Fore.CYAN + "Just checking for updates, please wait...");
-	print_out(Fore.CYAN + "Updating CloudFlare subnet...");
-	if(args.tor == False):
-		headers = {'User-Agent': 'Mozilla/5.0 (Windows; U; Windows NT 5.1; it; rv:1.8.1.11) Gecko/20071127 Firefox/2.0.0.11'}
-		r = requests.get("https://www.cloudflare.com/ips-v4", headers=headers, cookies={'__cfduid': "d7c6a0ce9257406ea38be0156aa1ea7a21490639772"}, stream=True)
-		with open('data/cf-subnet.txt', 'wb') as fd:
-			for chunk in r.iter_content(4000):
-				fd.write(chunk)
-	else:
-		print_out(Fore.RED + Style.BRIGHT+"Unable to fetch CloudFlare subnet while TOR is active")
-	print_out(Fore.CYAN + "Updating Crimeflare database...");
-	r = requests.get("http://crimeflare.net:82/domains/ipout.zip", stream=True)
-	with open('data/ipout.zip', 'wb') as fd:
-		for chunk in r.iter_content(4000):
-			fd.write(chunk)
-	zip_ref = zipfile.ZipFile("data/ipout.zip", 'r')
-	zip_ref.extractall("data/")
-	zip_ref.close()
-	os.remove("data/ipout.zip")
-	
-				
+    print_out(Fore.CYAN + "Just checking for updates, please wait...")
+    print_out(Fore.CYAN + "Updating CloudFlare subnet...")
+    if(args.tor == False):
+        headers = {'User-Agent': 'Mozilla/5.0 (Windows; U; Windows NT 5.1; it; rv:1.8.1.11) Gecko/20071127 Firefox/2.0.0.11'}
+        r = requests.get("https://www.cloudflare.com/ips-v4", headers=headers, cookies={'__cfduid': "d7c6a0ce9257406ea38be0156aa1ea7a21490639772"}, stream=True)
+        with open('data/cf-subnet.txt', 'wb') as fd:
+            for chunk in r.iter_content(4000):
+                fd.write(chunk)
+    else:
+        print_out(Fore.RED + Style.BRIGHT+"Unable to fetch CloudFlare subnet while TOR is active")
+    print_out(Fore.CYAN + "Updating Crimeflare database...")
+    r = requests.get("http://crimeflare.net:82/domains/ipout.zip", stream=True)
+    with open('data/ipout.zip', 'wb') as fd:
+        for chunk in r.iter_content(4000):
+            fd.write(chunk)
+    zip_ref = zipfile.ZipFile("data/ipout.zip", 'r')
+    zip_ref.extractall("data/")
+    zip_ref.close()
+    os.remove("data/ipout.zip")
+
+
 # END FUNCTIONS
 
 logo = """\
-   ____ _                 _ _____     _ _ 
+   ____ _                 _ _____     _ _
   / ___| | ___  _   _  __| |  ___|_ _(_) |
  | |   | |/ _ \| | | |/ _` | |_ / _` | | |
  | |___| | (_) | |_| | (_| |  _| (_| | | |

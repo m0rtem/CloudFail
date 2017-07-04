@@ -39,3 +39,4 @@ To run a scan against a target using Tor:
 * binascii
 * datetime
 * requests
+* win_inet_pton
