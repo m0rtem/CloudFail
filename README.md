@@ -20,7 +20,7 @@ The author bears no responsibility for any misuse of the tool.
 
 To run a scan against a target:
 
-```python cloudfail.py --target seo.com```
+```python3 cloudfail.py --target seo.com```
 
 To run a scan against a target using Tor:
 
@@ -28,7 +28,9 @@ To run a scan against a target using Tor:
 
 (or if you are using Windows or Mac install vidalia or just run the Tor browser)
 
-```python cloudfail.py --target seo.com --tor```
+```python3 cloudfail.py --target seo.com --tor```
+
+> Please make sure you are running with Python3 and not Python2.*.
 
 
 #### Dependencies
