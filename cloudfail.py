@@ -20,7 +20,7 @@ colorama.init(Style.BRIGHT)
 
 def print_out(data, end='\n'):
     datetimestr = str(datetime.datetime.strftime(datetime.datetime.now(), '%H:%M:%S'))
-    print(Style.NORMAL + "[" + datetimestr + "] " + data + Style.RESET_ALL,' ', end=end)
+    print(Style.NORMAL + "[" + datetimestr + "] " + data + Style.RESET_ALL,' ', end == end)
 
 
 def ip_in_subnetwork(ip_address, subnetwork):
