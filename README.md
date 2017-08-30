@@ -18,6 +18,16 @@ This tool is only for academic purposes and testing  under controlled environmen
 from the network owner of the network under testing.
 The author bears no responsibility for any misuse of the tool.
 
+#### Install on Kali/Debian
+
+First we need to install pip3 for python3 dependencies:
+
+```$ sudo apt-get install python3-pip```
+
+Then we can run through dependency checks:
+
+```$ pip3 install -r requirements.txt```
+
 #### Usage
 
 To run a scan against a target:
