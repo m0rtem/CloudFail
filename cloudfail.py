@@ -84,7 +84,7 @@ def dnsdumpster(target):
     if res['dns_records']['host']:
         for entry in res['dns_records']['host']:
             provider = str(entry['provider'])
-            if "CloudFlare" not in provider:
+            if "Cloudflare" not in provider:
                 print_out(
                     Style.BRIGHT + Fore.WHITE + "[FOUND:HOST] " + Fore.GREEN + "{domain} {ip} {as} {provider} {country}".format(
                         **entry))
@@ -92,7 +92,7 @@ def dnsdumpster(target):
     if res['dns_records']['dns']:
         for entry in res['dns_records']['dns']:
             provider = str(entry['provider'])
-            if "CloudFlare" not in provider:
+            if "Cloudflare" not in provider:
                 print_out(
                     Style.BRIGHT + Fore.WHITE + "[FOUND:DNS] " + Fore.GREEN + "{domain} {ip} {as} {provider} {country}".format(
                         **entry))
@@ -100,7 +100,7 @@ def dnsdumpster(target):
     if res['dns_records']['mx']:
         for entry in res['dns_records']['mx']:
             provider = str(entry['provider'])
-            if "CloudFlare" not in provider:
+            if "Cloudflare" not in provider:
                 print_out(
                     Style.BRIGHT + Fore.WHITE + "[FOUND:MX] " + Fore.GREEN + "{ip} {as} {provider} {domain}".format(
                         **entry))
