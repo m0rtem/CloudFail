@@ -2,7 +2,7 @@
 
 https://sploit.io/2017/08/12/cloudfail-a-tactical-dns-reconnaissance-tool/
 
-CloudFail is a tactical reconnaissance tool which aims to gather enough information about a target protected by CloudFlare in the hopes of discovering the location of the server. Using Tor to mask all requests, the tool as of right now has 3 different attack phases.
+CloudFail is a tactical reconnaissance tool which aims to gather enough information about a target protected by Cloudflare in the hopes of discovering the location of the server. Using Tor to mask all requests, the tool as of right now has 3 different attack phases.
 
 1. Misconfigured DNS scan using DNSDumpster.com.
 2. Scan the Crimeflare.com database.
@@ -13,7 +13,7 @@ CloudFail is a tactical reconnaissance tool which aims to gather enough informat
 > Please feel free to contribute to this project. If you have an idea or improvement issue a pull request!
 
 #### Disclaimer
-This tool is a PoC (Proof of Concept) and does not guarantee results.  It is possible to setup CloudFlare properly so that the IP is never released or logged anywhere; this is not often the case and hence why this tool exists.
+This tool is a PoC (Proof of Concept) and does not guarantee results.  It is possible to setup Cloudflare properly so that the IP is never released or logged anywhere; this is not often the case and hence why this tool exists.
 This tool is only for academic purposes and testing  under controlled environments. Do not use without obtaining proper authorization
 from the network owner of the network under testing.
 The author bears no responsibility for any misuse of the tool.
