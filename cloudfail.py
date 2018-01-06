@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+from __future__ import print_function
 import argparse
 import sys
 import socket
@@ -11,7 +12,6 @@ import zipfile
 import os
 import win_inet_pton
 import platform
-
 from colorama import Fore, Style
 from DNSDumpsterAPI import DNSDumpsterAPI
 
