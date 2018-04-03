@@ -222,7 +222,7 @@ def update():
     else:
         print_out(Fore.RED + Style.BRIGHT+"Unable to fetch CloudFlare subnet while TOR is active")
     print_out(Fore.CYAN + "Updating Crimeflare database...")
-    r = requests.get("http://crimeflare.net:82/domains/ipout.zip", stream=True)
+    r = requests.get("http://crimeflare.net:83/domains/ipout.zip", stream=True)
     with open('data/ipout.zip', 'wb') as fd:
         for chunk in r.iter_content(4000):
             fd.write(chunk)
