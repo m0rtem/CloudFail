@@ -14,6 +14,7 @@ import win_inet_pton
 import platform
 from colorama import Fore, Style
 from DNSDumpsterAPI import DNSDumpsterAPI
+import dns.resolver
 
 colorama.init(Style.BRIGHT)
 
@@ -167,8 +168,23 @@ def inCloudFlare(ip):
         return False
 
 def check_for_wildcard(target):
-
-    return True
+    resolver = dns.resolver.Resolver(configure=False)
+    resolver.nameservers = ['1.1.1.1', '1.0.0.1']
+    #Unsure how exactly I should test, for now simple appending to target. Don't know how to extract only domain to append *. for wildcard test
+    try:
+        #Throws exception if none found
+        answer = resolver.query('*.' + target)
+        #If found, ask user if continue as long until valid answer
+        choice = ''
+        while choice is not 'y' and choice is not 'n':
+            choice = input("A wildcard DNS entry was found.  This will result in all subdomains returning an IP. Do you want to scan subdomains anyway? (y/n) ")
+        if choice is 'y':
+            return True
+        else:
+            return False
+    except:
+        #Return true to continue subdomain bruteforce because no wildcard found
+        return True
 
 
 def subdomain_scan(target, subdomains):
