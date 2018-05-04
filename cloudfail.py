@@ -177,7 +177,7 @@ def check_for_wildcard(target):
         #If found, ask user if continue as long until valid answer
         choice = ''
         while choice is not 'y' and choice is not 'n':
-            choice = input("A wildcard DNS entry was found.  This will result in all subdomains returning an IP. Do you want to scan subdomains anyway? (y/n) ")
+            choice = input("A wildcard DNS entry was found.  This will result in all subdomains returning an IP. Do you want to scan subdomains anyway? (y/n): ")
         if choice is 'y':
             return True
         else:
