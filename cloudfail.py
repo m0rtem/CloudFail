@@ -166,49 +166,54 @@ def inCloudFlare(ip):
                 return True
         return False
 
+def check_for_wildcard(target):
+
+    return True
+
 
 def subdomain_scan(target, subdomains):
     i = 0
     c = 0
-    if subdomains:
-    	subdomainsList = subdomains
-    else:
-    	subdomainsList = "subdomains.txt"
-    try:
-        with open("data/" + subdomainsList, "r") as wordlist:
-            numOfLines = len(open("data/subdomains.txt").readlines(  ))
-            numOfLinesInt = numOfLines
-            numOfLines = str(numOfLines)
-            print_out(Fore.CYAN + "Scanning " + numOfLines + " subdomains (" + subdomainsList + "), please wait...")
-            for word in wordlist:
-                c += 1
-                if (c % int((float(numOfLinesInt) / 100.0))) == 0:
-                    print_out(Fore.CYAN + str(round((c / float(numOfLinesInt)) * 100.0, 2)) + "% complete", '\r')
+    if check_for_wildcard(target):
+        if subdomains:
+            subdomainsList = subdomains
+        else:
+            subdomainsList = "subdomains.txt"
+        try:
+            with open("data/" + subdomainsList, "r") as wordlist:
+                numOfLines = len(open("data/subdomains.txt").readlines(  ))
+                numOfLinesInt = numOfLines
+                numOfLines = str(numOfLines)
+                print_out(Fore.CYAN + "Scanning " + numOfLines + " subdomains (" + subdomainsList + "), please wait...")
+                for word in wordlist:
+                    c += 1
+                    if (c % int((float(numOfLinesInt) / 100.0))) == 0:
+                        print_out(Fore.CYAN + str(round((c / float(numOfLinesInt)) * 100.0, 2)) + "% complete", '\r')
 
-                subdomain = "{}.{}".format(word.strip(), target)
-                try:
-                    target_http = requests.get("http://"+subdomain)
-                    target_http = str(target_http.status_code)
-                    ip = socket.gethostbyname(subdomain)
-                    ifIpIsWithin = inCloudFlare(ip)
+                    subdomain = "{}.{}".format(word.strip(), target)
+                    try:
+                        target_http = requests.get("http://"+subdomain)
+                        target_http = str(target_http.status_code)
+                        ip = socket.gethostbyname(subdomain)
+                        ifIpIsWithin = inCloudFlare(ip)
 
-                    if not ifIpIsWithin:
-                        i += 1
-                        print_out(Style.BRIGHT+Fore.WHITE+"[FOUND:SUBDOMAIN] "+Fore.GREEN + subdomain + " IP: " + ip + " HTTP: " + target_http)
-                    else:
-                        print_out(Style.BRIGHT+Fore.WHITE+"[FOUND:SUBDOMAIN] "+Fore.RED + subdomain + " ON CLOUDFLARE NETWORK!")
+                        if not ifIpIsWithin:
+                            i += 1
+                            print_out(Style.BRIGHT+Fore.WHITE+"[FOUND:SUBDOMAIN] "+Fore.GREEN + subdomain + " IP: " + ip + " HTTP: " + target_http)
+                        else:
+                            print_out(Style.BRIGHT+Fore.WHITE+"[FOUND:SUBDOMAIN] "+Fore.RED + subdomain + " ON CLOUDFLARE NETWORK!")
+                            continue
+
+                    except requests.exceptions.RequestException as e:
                         continue
+                if(i == 0):
+                    print_out(Fore.CYAN + "Scanning finished, we did not find anything, sorry...")
+                else:
+                    print_out(Fore.CYAN + "Scanning finished...")
 
-                except requests.exceptions.RequestException as e:
-                    continue
-            if(i == 0):
-                print_out(Fore.CYAN + "Scanning finished, we did not find anything sorry...")
-            else:
-                print_out(Fore.CYAN + "Scanning finished...")
-
-    except IOError:
-        print_out(Fore.RED + "Subdomains file does not exist in data directory, aborting scan...")
-        sys.exit(1)
+        except IOError:
+            print_out(Fore.RED + "Subdomains file does not exist in data directory, aborting scan...")
+            sys.exit(1)
 
 def update():
     print_out(Fore.CYAN + "Just checking for updates, please wait...")
