@@ -54,6 +54,7 @@ To run a scan against a target using Tor:
 * datetime
 * requests
 * win_inet_pton
+* dnspython
 
 ## Donate BTC
 > 13eiCHxmAEaRZDXcgKJVtVnCKK5mTR1u1F
