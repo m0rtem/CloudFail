@@ -26,6 +26,10 @@ Then we can run through dependency checks:
 
 ```$ pip3 install -r requirements.txt```
 
+If this fails because of missing setuptools, do this:
+
+```sudo apt-get install python3-setuptools```
+
 #### Usage
 
 To run a scan against a target:
