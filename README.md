@@ -26,6 +26,10 @@ Then we can run through dependency checks:
 
 ```$ pip3 install -r requirements.txt```
 
+If this fails because of missing setuptools, do this:
+
+```sudo apt-get install python3-setuptools```
+
 #### Usage
 
 To run a scan against a target:
@@ -52,6 +56,7 @@ To run a scan against a target using Tor:
 * datetime
 * requests
 * win_inet_pton
+* dnspython
 
 ## Donate BTC
 > 13eiCHxmAEaRZDXcgKJVtVnCKK5mTR1u1F
