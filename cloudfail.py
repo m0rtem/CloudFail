@@ -167,7 +167,7 @@ def inCloudFlare(ip):
         return False
 
 
-def subdomain_scan(target, subdomains):
+def subdomain_scan(target, subdomains, ignoreIps):
     i = 0
     c = 0
     if subdomains:
@@ -191,11 +191,12 @@ def subdomain_scan(target, subdomains):
                     target_http = str(target_http.status_code)
                     ip = socket.gethostbyname(subdomain)
                     ifIpIsWithin = inCloudFlare(ip)
+                    ipIgnored = ip in ignoreIps
 
-                    if not ifIpIsWithin:
+                    if not ifIpIsWithin and not ipIgnored:
                         i += 1
                         print_out(Style.BRIGHT+Fore.WHITE+"[FOUND:SUBDOMAIN] "+Fore.GREEN + subdomain + " IP: " + ip + " HTTP: " + target_http)
-                    else:
+                    elif not ipIgnored:
                         print_out(Style.BRIGHT+Fore.WHITE+"[FOUND:SUBDOMAIN] "+Fore.RED + subdomain + " ON CLOUDFLARE NETWORK!")
                         continue
 
@@ -252,6 +253,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument("-t", "--target", help="target url of website", type=str)
 parser.add_argument("-T", "--tor", dest="tor", action="store_true", help="enable TOR routing")
 parser.add_argument("-u", "--update", dest="update", action="store_true", help="update databases")
+parser.add_argument('-i','--ignore', dest="ignore", nargs='+', help='Space-Delimited list of IP addresses to ignore in subdomain scan', default=[])
 parser.add_argument("-s", "--subdomains", help="name of alternate subdomains list stored in the data directory", type=str)
 parser.set_defaults(tor=False)
 parser.set_defaults(update=False)
@@ -288,7 +290,7 @@ try:
     crimeflare(args.target)
 
     # Scan subdomains with or without TOR
-    subdomain_scan(args.target, args.subdomains)
+    subdomain_scan(args.target, args.subdomains, args.ignore)
 
 except KeyboardInterrupt:
     sys.exit(0)
