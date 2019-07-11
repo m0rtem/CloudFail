@@ -14,6 +14,7 @@ import win_inet_pton
 import platform
 from colorama import Fore, Style
 from DNSDumpsterAPI import DNSDumpsterAPI
+import dns.resolver
 
 colorama.init(Style.BRIGHT)
 
@@ -166,49 +167,69 @@ def inCloudFlare(ip):
                 return True
         return False
 
+def check_for_wildcard(target):
+    resolver = dns.resolver.Resolver(configure=False)
+    resolver.nameservers = ['1.1.1.1', '1.0.0.1']
+    #Unsure how exactly I should test, for now simple appending to target. Don't know how to extract only domain to append *. for wildcard test
+    try:
+        #Throws exception if none found
+        answer = resolver.query('*.' + target)
+        #If found, ask user if continue as long until valid answer
+        choice = ''
+        while choice is not 'y' and choice is not 'n':
+            choice = input("A wildcard DNS entry was found.  This will result in all subdomains returning an IP. Do you want to scan subdomains anyway? (y/n): ")
+        if choice is 'y':
+            return True
+        else:
+            return False
+    except:
+        #Return true to continue subdomain bruteforce because no wildcard found
+        return True
+
 
 def subdomain_scan(target, subdomains):
     i = 0
     c = 0
-    if subdomains:
-    	subdomainsList = subdomains
-    else:
-    	subdomainsList = "subdomains.txt"
-    try:
-        with open("data/" + subdomainsList, "r") as wordlist:
-            numOfLines = len(open("data/subdomains.txt").readlines(  ))
-            numOfLinesInt = numOfLines
-            numOfLines = str(numOfLines)
-            print_out(Fore.CYAN + "Scanning " + numOfLines + " subdomains (" + subdomainsList + "), please wait...")
-            for word in wordlist:
-                c += 1
-                if (c % int((float(numOfLinesInt) / 100.0))) == 0:
-                    print_out(Fore.CYAN + str(round((c / float(numOfLinesInt)) * 100.0, 2)) + "% complete", '\r')
+    if check_for_wildcard(target):
+        if subdomains:
+            subdomainsList = subdomains
+        else:
+            subdomainsList = "subdomains.txt"
+        try:
+            with open("data/" + subdomainsList, "r") as wordlist:
+                numOfLines = len(open("data/subdomains.txt").readlines(  ))
+                numOfLinesInt = numOfLines
+                numOfLines = str(numOfLines)
+                print_out(Fore.CYAN + "Scanning " + numOfLines + " subdomains (" + subdomainsList + "), please wait...")
+                for word in wordlist:
+                    c += 1
+                    if (c % int((float(numOfLinesInt) / 100.0))) == 0:
+                        print_out(Fore.CYAN + str(round((c / float(numOfLinesInt)) * 100.0, 2)) + "% complete", '\r')
 
-                subdomain = "{}.{}".format(word.strip(), target)
-                try:
-                    target_http = requests.get("http://"+subdomain)
-                    target_http = str(target_http.status_code)
-                    ip = socket.gethostbyname(subdomain)
-                    ifIpIsWithin = inCloudFlare(ip)
+                    subdomain = "{}.{}".format(word.strip(), target)
+                    try:
+                        target_http = requests.get("http://"+subdomain)
+                        target_http = str(target_http.status_code)
+                        ip = socket.gethostbyname(subdomain)
+                        ifIpIsWithin = inCloudFlare(ip)
 
-                    if not ifIpIsWithin:
-                        i += 1
-                        print_out(Style.BRIGHT+Fore.WHITE+"[FOUND:SUBDOMAIN] "+Fore.GREEN + subdomain + " IP: " + ip + " HTTP: " + target_http)
-                    else:
-                        print_out(Style.BRIGHT+Fore.WHITE+"[FOUND:SUBDOMAIN] "+Fore.RED + subdomain + " ON CLOUDFLARE NETWORK!")
+                        if not ifIpIsWithin:
+                            i += 1
+                            print_out(Style.BRIGHT+Fore.WHITE+"[FOUND:SUBDOMAIN] "+Fore.GREEN + subdomain + " IP: " + ip + " HTTP: " + target_http)
+                        else:
+                            print_out(Style.BRIGHT+Fore.WHITE+"[FOUND:SUBDOMAIN] "+Fore.RED + subdomain + " ON CLOUDFLARE NETWORK!")
+                            continue
+
+                    except requests.exceptions.RequestException as e:
                         continue
+                if(i == 0):
+                    print_out(Fore.CYAN + "Scanning finished, we did not find anything, sorry...")
+                else:
+                    print_out(Fore.CYAN + "Scanning finished...")
 
-                except requests.exceptions.RequestException as e:
-                    continue
-            if(i == 0):
-                print_out(Fore.CYAN + "Scanning finished, we did not find anything sorry...")
-            else:
-                print_out(Fore.CYAN + "Scanning finished...")
-
-    except IOError:
-        print_out(Fore.RED + "Subdomains file does not exist in data directory, aborting scan...")
-        sys.exit(1)
+        except IOError:
+            print_out(Fore.RED + "Subdomains file does not exist in data directory, aborting scan...")
+            sys.exit(1)
 
 def update():
     print_out(Fore.CYAN + "Just checking for updates, please wait...")
