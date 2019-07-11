@@ -167,14 +167,12 @@ def inCloudFlare(ip):
                 return True
         return False
 
+
 def check_for_wildcard(target):
     resolver = dns.resolver.Resolver(configure=False)
     resolver.nameservers = ['1.1.1.1', '1.0.0.1']
-    #Unsure how exactly I should test, for now simple appending to target. Don't know how to extract only domain to append *. for wildcard test
     try:
-        #Throws exception if none found
-        answer = resolver.query('*.' + target)
-        #If found, ask user if continue as long until valid answer
+        resolver.query('*.' + target)
         choice = ''
         while choice is not 'y' and choice is not 'n':
             choice = input("A wildcard DNS entry was found.  This will result in all subdomains returning an IP. Do you want to scan subdomains anyway? (y/n): ")
@@ -183,7 +181,6 @@ def check_for_wildcard(target):
         else:
             return False
     except:
-        #Return true to continue subdomain bruteforce because no wildcard found
         return True
 
 
@@ -220,7 +217,7 @@ def subdomain_scan(target, subdomains):
                             print_out(Style.BRIGHT+Fore.WHITE+"[FOUND:SUBDOMAIN] "+Fore.RED + subdomain + " ON CLOUDFLARE NETWORK!")
                             continue
 
-                    except requests.exceptions.RequestException as e:
+                    except requests.exceptions.RequestException:
                         continue
                 if(i == 0):
                     print_out(Fore.CYAN + "Scanning finished, we did not find anything, sorry...")
@@ -291,7 +288,7 @@ if args.tor is True:
         print_out(Fore.WHITE + Style.BRIGHT + "New IP: " + tor_ip)
 
     except requests.exceptions.RequestException as e:
-        print(e, net_exc)
+        print(e)
         sys.exit(0)
 
 if args.update is True:
