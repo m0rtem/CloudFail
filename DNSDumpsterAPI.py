@@ -30,7 +30,7 @@ class DNSDumpsterAPI(object):
             tds = tr.findAll('td')
             pattern_ip = r'([0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3})'
             ip = re.findall(pattern_ip, tds[1].text)[0]
-            domain = re.sub(' +', ' ', tds[0].text.replace('\n', ' '))
+            domain = tds[0].text.replace('\n', ' ')
 
             additional_info = tds[2].text
             country = tds[2].find('span', attrs={}).text
