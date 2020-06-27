@@ -167,7 +167,7 @@ def inCloudFlare(ip):
         return False
 
 
-def subdomain_scan(target, subdomains):
+def subdomain_scan(target, subdomains, timeout):
     i = 0
     c = 0
     if subdomains:
@@ -187,7 +187,7 @@ def subdomain_scan(target, subdomains):
 
                 subdomain = "{}.{}".format(word.strip(), target)
                 try:
-                    target_http = requests.get("http://"+subdomain)
+                    target_http = requests.get("http://"+subdomain, timeout=timeout)
                     target_http = str(target_http.status_code)
                     ip = socket.gethostbyname(subdomain)
                     ifIpIsWithin = inCloudFlare(ip)
@@ -244,7 +244,8 @@ logo = """\
 
 """
 
-print(Fore.RED + Style.BRIGHT + logo + Fore.RESET)
+DEFAULT_TIMEOUT = 5
+print(Fore.BLUE + Style.BRIGHT + logo + Fore.RESET)
 datestr = str(datetime.datetime.strftime(datetime.datetime.now(), '%d/%m/%Y'))
 print_out("Initializing CloudFail - the date is: " + datestr)
 
@@ -253,6 +254,8 @@ parser.add_argument("-t", "--target", help="target url of website", type=str)
 parser.add_argument("-T", "--tor", dest="tor", action="store_true", help="enable TOR routing")
 parser.add_argument("-u", "--update", dest="update", action="store_true", help="update databases")
 parser.add_argument("-s", "--subdomains", help="name of alternate subdomains list stored in the data directory", type=str)
+parser.add_argument("-d", "--timeout", help="timeout duration for requests with default being 5 seconds", type=int)
+
 parser.set_defaults(tor=False)
 parser.set_defaults(update=False)
 
@@ -276,6 +279,7 @@ if args.tor is True:
 if args.update is True:
     update()
 
+timeout = args.timeout if args.timeout else DEFAULT_TIMEOUT
 try:
 
     # Initialize CloudFail
@@ -288,7 +292,7 @@ try:
     crimeflare(args.target)
 
     # Scan subdomains with or without TOR
-    subdomain_scan(args.target, args.subdomains)
+    subdomain_scan(args.target, args.subdomains, timeout)
 
 except KeyboardInterrupt:
     sys.exit(0)
