@@ -267,7 +267,7 @@ logo = """\
  | |   | |/ _ \| | | |/ _` | |_ / _` | | |
  | |___| | (_) | |_| | (_| |  _| (_| | | |
   \____|_|\___/ \__,_|\__,_|_|  \__,_|_|_|
-    v1.0.1                      by m0rtem
+    v1.0.2                      by m0rtem
 
 """
 
@@ -286,7 +286,7 @@ parser.set_defaults(update=False)
 args = parser.parse_args()
 
 if args.tor is True:
-    ipcheck_url = 'http://canihazip.com/s'
+    ipcheck_url = 'http://ipinfo.io/ip'
     socks.setdefaultproxy(socks.PROXY_TYPE_SOCKS5, '127.0.0.1', 9050)
     socket.socket = socks.socksocket
     try:
