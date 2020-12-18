@@ -174,12 +174,12 @@ def check_for_wildcard(target):
     #Unsure how exactly I should test, for now simple appending to target. Don't know how to extract only domain to append *. for wildcard test
     try:
         #Throws exception if none found
-        answer = resolver.query('*.' + target)
+        answer = resolver.resolve('*.' + target)
         #If found, ask user if continue as long until valid answer
         choice = ''
-        while choice is not 'y' and choice is not 'n':
+        while choice != 'y' and choice != 'n':
             choice = input("A wildcard DNS entry was found. This will result in all subdomains returning an IP. Do you want to scan subdomains anyway? (y/n): ")
-        if choice is 'y':
+        if choice == 'y':
             return False
         else:
             return True
