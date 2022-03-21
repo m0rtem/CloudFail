@@ -249,15 +249,10 @@ def update():
     else:
         print_out(Fore.RED + Style.BRIGHT+"Unable to fetch CloudFlare subnet while TOR is active")
     print_out(Fore.CYAN + "Updating Crimeflare database...")
-    r = requests.get("http://crimeflare.net:83/domains/ipout.zip", stream=True)
-    with open('data/ipout.zip', 'wb') as fd:
+    r = requests.get("https://cf.ozeliurs.com/ipout", stream=True)
+    with open('data/ipout', 'wb') as fd:
         for chunk in r.iter_content(4000):
             fd.write(chunk)
-    zip_ref = zipfile.ZipFile("data/ipout.zip", 'r')
-    zip_ref.extractall("data/")
-    zip_ref.close()
-    os.remove("data/ipout.zip")
-
 
 # END FUNCTIONS
 
@@ -267,7 +262,7 @@ logo = """\
  | |   | |/ _ \| | | |/ _` | |_ / _` | | |
  | |___| | (_) | |_| | (_| |  _| (_| | | |
   \____|_|\___/ \__,_|\__,_|_|  \__,_|_|_|
-    v1.0.3                      by m0rtem
+    v1.0.4                      by m0rtem
 
 """
 
