@@ -40,3 +40,6 @@ jobs:
     - name: Test with pytest
       run: |
         python3 cloudfail.py --target ${{ env.CLOUDFAIL_TARGET }}
+        
+      env:
+          CLOUDFAIL_TARGET: ${{ inputs.cloudfail_target }}
