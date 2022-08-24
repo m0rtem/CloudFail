@@ -7,7 +7,6 @@ import socket
 import binascii
 import datetime
 import socks
-import collections.abc as collections_abc
 import requests
 import colorama
 import zipfile
