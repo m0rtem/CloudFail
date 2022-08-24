@@ -28,8 +28,8 @@ jobs:
         python-version: "3.10"
     - name: Install dependencies
       run: |
-        sudo apt-get install python3-pip
-        sudo apt-get install python3-setuptools
+        python -m pip install --upgrade pip
+        pip install flake8
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
     - name: Lint with flake8
       run: |
@@ -39,7 +39,7 @@ jobs:
         flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
     - name: Test with pytest
       run: |
-        python3 cloudfail.py --target ${{ env.CLOUDFAIL_TARGET }}
+        pytest cloudfail.py --target ${{ env.CLOUDFAIL_TARGET }}
         
       env:
           CLOUDFAIL_TARGET: ${{ inputs.cloudfail_target }}
