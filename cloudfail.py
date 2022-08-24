@@ -15,6 +15,7 @@ import win_inet_pton
 import platform
 from colorama import Fore, Style
 from DNSDumpsterAPI import DNSDumpsterAPI
+from collection.abc import Callable # fix for github actions
 import dns.resolver
 
 colorama.init(Style.BRIGHT)
