@@ -60,7 +60,7 @@ from errno import EOPNOTSUPP, EINVAL, EAGAIN
 from io import BytesIO
 from os import SEEK_CUR
 from collections.abc import Callable
-collections.Callable = collections.abc.Callable
+collections.Callable = collections.abc
 from base64 import b64encode
 
 PROXY_TYPE_SOCKS4 = SOCKS4 = 1
