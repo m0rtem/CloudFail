@@ -59,7 +59,8 @@ import struct
 from errno import EOPNOTSUPP, EINVAL, EAGAIN
 from io import BytesIO
 from os import SEEK_CUR
-from collections.abc import Callable # inputerror fix
+import collections
+collections.Callable = collections.abc.Callable # inputerror fix
 from base64 import b64encode
 
 PROXY_TYPE_SOCKS4 = SOCKS4 = 1
