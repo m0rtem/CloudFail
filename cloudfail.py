@@ -6,7 +6,6 @@ import sys
 import socket
 import binascii
 import datetime
-import Callable
 import socks
 import requests
 import colorama
