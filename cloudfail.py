@@ -7,6 +7,7 @@ import socket
 import binascii
 import datetime
 import socks
+import collections
 import requests
 import colorama
 import zipfile
