@@ -34,7 +34,7 @@ jobs:
         if [ -f requirements.txt ]; then pip3 install -r requirements.txt; fi
     - name: Update CloudFail database
       run: |
-        python3 cloudfail.py --update"
+        python3 cloudfail.py --update
     - name: Scan target site with cloudfail
       run: |
         python3 cloudfail.py --subdomains --target "${{ env.CLOUDFAIL_TARGET }}"
