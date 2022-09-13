@@ -32,12 +32,9 @@ jobs:
         sudo apt-get install python3-setuptools
         pip install flake8
         if [ -f requirements.txt ]; then pip3 install -r requirements.txt; fi
-    - name: Update CloudFail database
+    - name: Scan target site with CloudFail
       run: |
-        python3 cloudfail.py --update
-    - name: Scan target site with cloudfail
-      run: |
-        python3 cloudfail.py --subdomains --target "${{ env.CLOUDFAIL_TARGET }}"
+        python3 cloudfail.py --update --subdomains --target "${{ env.CLOUDFAIL_TARGET }}"
         
       env:
           CLOUDFAIL_TARGET: ${{ inputs.cloudfail_target }}
