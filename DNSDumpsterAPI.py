@@ -9,6 +9,8 @@ import requests
 import re
 import sys
 import base64
+import collections
+collections.Callable = collections.abc.Callable
 
 from bs4 import BeautifulSoup
 
