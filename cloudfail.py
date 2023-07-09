@@ -22,7 +22,7 @@ colorama.init(Style.BRIGHT)
 
 def print_out(data, end='\n'):
     datetimestr = str(datetime.datetime.strftime(datetime.datetime.now(), '%H:%M:%S'))
-    print(Style.NORMAL + "[" + datetimestr + "] " + re.sub(' +', ' ', data) + Style.RESET_ALL,' ', end=end)
+    print(Style.NORMAL + "[" + datetimestr + "] " + re.sub(' +', ' ', data) + Style.RESET_ALL, ' ', end=end)
 
 
 def ip_in_subnetwork(ip_address, subnetwork):
@@ -39,7 +39,8 @@ def ip_to_integer(ip_address):
     # try parsing the IP address first as IPv4, then as IPv6
     for version in (socket.AF_INET, socket.AF_INET6):
         try:
-            ip_hex = win_inet_pton.inet_pton(version, ip_address) if platform == 'Windows' else socket.inet_pton(version, ip_address)
+            ip_hex = win_inet_pton.inet_pton(version, ip_address) if platform == 'Windows' else socket.inet_pton(
+                version, ip_address)
             ip_integer = int(binascii.hexlify(ip_hex), 16)
 
             return ip_integer, 4 if version == socket.AF_INET else 6
@@ -78,7 +79,7 @@ def subnetwork_to_ip_range(subnetwork):
     raise ValueError("invalid subnetwork")
 
 
-def dnsdumpster(target):
+def dnsdumpster(target, output_file):
     print_out(Fore.CYAN + "Testing for misconfigured DNS using dnsdumpster...")
 
     res = DNSDumpsterAPI(False).search(target)
@@ -90,6 +91,10 @@ def dnsdumpster(target):
                 print_out(
                     Style.BRIGHT + Fore.WHITE + "[FOUND:HOST] " + Fore.GREEN + "{domain} {ip} {as} {provider} {country}".format(
                         **entry))
+                if output_file:
+                    with open(output_file, "a") as f:
+                        f.write(Fore.WHITE + "[FOUND:HOST] " + Fore.GREEN + "{domain} {ip} {as} {provider} {country}".format(
+                            **entry) + "\n")
 
     if res['dns_records']['dns']:
         for entry in res['dns_records']['dns']:
@@ -98,6 +103,10 @@ def dnsdumpster(target):
                 print_out(
                     Style.BRIGHT + Fore.WHITE + "[FOUND:DNS] " + Fore.GREEN + "{domain} {ip} {as} {provider} {country}".format(
                         **entry))
+                if output_file:
+                    with open(output_file, "a") as f:
+                        f.write(Fore.WHITE + "[FOUND:DNS] " + Fore.GREEN + "{domain} {ip} {as} {provider} {country}".format(
+                            **entry) + "\n")                        
 
     if res['dns_records']['mx']:
         for entry in res['dns_records']['mx']:
@@ -106,9 +115,13 @@ def dnsdumpster(target):
                 print_out(
                     Style.BRIGHT + Fore.WHITE + "[FOUND:MX] " + Fore.GREEN + "{ip} {as} {provider} {domain}".format(
                         **entry))
+                if output_file:
+                    with open(output_file, "a") as f:
+                        f.write(Fore.WHITE + "[FOUND:MX] " + Fore.GREEN + "{ip} {as} {provider} {domain}".format(
+                            **entry) + "\n")                        
 
 
-def crimeflare(target):
+def crimeflare(target, output_file):
     print_out(Fore.CYAN + "Scanning crimeflare database...")
 
     with open("data/ipout", "r") as ins:
@@ -122,6 +135,10 @@ def crimeflare(target):
     if (len(crimeFoundArray) != 0):
         for foundIp in crimeFoundArray:
             print_out(Style.BRIGHT + Fore.WHITE + "[FOUND:IP] " + Fore.GREEN + "" + foundIp.strip())
+            if output_file:
+                with open(output_file, "a") as f:
+                    f.write(Fore.WHITE + "[FOUND:IP] " + Fore.GREEN + "" + foundIp.strip() + "\n")
+            
     else:
         print_out("Did not find anything.")
 
@@ -134,9 +151,9 @@ def init(target):
         sys.exit(1)
 
     if not os.path.isfile("data/ipout"):
-            print_out(Fore.CYAN + "No ipout file found, fetching data")
-            update()
-            print_out(Fore.CYAN + "ipout file created")
+        print_out(Fore.CYAN + "No ipout file found, fetching data")
+        update()
+        print_out(Fore.CYAN + "ipout file created")
 
     try:
         ip = socket.gethostbyname(args.target)
@@ -168,14 +185,15 @@ def inCloudFlare(ip):
                 return True
         return False
 
+
 def check_for_wildcard(target):
     resolver = dns.resolver.Resolver(configure=False)
     resolver.nameservers = ['1.1.1.1', '1.0.0.1']
-    #Unsure how exactly I should test, for now simple appending to target. Don't know how to extract only domain to append *. for wildcard test
+    # Unsure how exactly I should test, for now simple appending to target. Don't know how to extract only domain to append *. for wildcard test
     try:
-        #Throws exception if none found
+        # Throws exception if none found
         answer = resolver.resolve('*.' + target)
-        #If found, ask user if continue as long until valid answer
+        # If found, ask user if continue as long until valid answer
         choice = ''
         while choice != 'y' and choice != 'n':
             choice = input("A wildcard DNS entry was found. This will result in all subdomains returning an IP. Do you want to scan subdomains anyway? (y/n): ")
@@ -184,14 +202,15 @@ def check_for_wildcard(target):
         else:
             return True
     except:
-        #Return False to not return if no wildcard was found
+        # Return False to not return if no wildcard was found
         return False
 
-def subdomain_scan(target, subdomains):
+
+def subdomain_scan(target, subdomains, output_file):
     i = 0
     c = 0
     if check_for_wildcard(target):
-        #If has wildcard or input N, return
+        # If has wildcard or input N, return
         print_out(Fore.CYAN + "Scanning finished...")
         return
 
@@ -212,7 +231,7 @@ def subdomain_scan(target, subdomains):
 
                 subdomain = "{}.{}".format(word.strip(), target)
                 try:
-                    target_http = requests.get("http://" + subdomain)
+                    target_http = requests.get("http://" + subdomain, timeout=args.timeout)
                     target_http = str(target_http.status_code)
                     ip = socket.gethostbyname(subdomain)
                     ifIpIsWithin = inCloudFlare(ip)
@@ -221,6 +240,9 @@ def subdomain_scan(target, subdomains):
                         i += 1
                         print_out(
                             Style.BRIGHT + Fore.WHITE + "[FOUND:SUBDOMAIN] " + Fore.GREEN + subdomain + " IP: " + ip + " HTTP: " + target_http)
+                        if output_file:
+                            with open(output_file, "a") as f:
+                                f.write(Fore.WHITE + "[FOUND:SUBDOMAIN] " + Fore.GREEN + subdomain + " IP: " + ip + " HTTP: " + target_http + "\n")
                     else:
                         print_out(
                             Style.BRIGHT + Fore.WHITE + "[FOUND:SUBDOMAIN] " + Fore.RED + subdomain + " ON CLOUDFLARE NETWORK!")
@@ -237,22 +259,26 @@ def subdomain_scan(target, subdomains):
         print_out(Fore.RED + "Subdomains file does not exist in data directory, aborting scan...")
         sys.exit(1)
 
+
 def update():
     print_out(Fore.CYAN + "Just checking for updates, please wait...")
     print_out(Fore.CYAN + "Updating CloudFlare subnet...")
-    if(args.tor == False):
-        headers = {'User-Agent': 'Mozilla/5.0 (Windows; U; Windows NT 5.1; it; rv:1.8.1.11) Gecko/20071127 Firefox/2.0.0.11'}
-        r = requests.get("https://www.cloudflare.com/ips-v4", headers=headers, cookies={'__cfduid': "d7c6a0ce9257406ea38be0156aa1ea7a21490639772"}, stream=True)
+    if (args.tor == False):
+        headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows; U; Windows NT 5.1; it; rv:1.8.1.11) Gecko/20071127 Firefox/2.0.0.11'}
+        r = requests.get("https://www.cloudflare.com/ips-v4",
+                         headers=headers, cookies={'__cfduid': "d7c6a0ce9257406ea38be0156aa1ea7a21490639772"}, stream=True)
         with open('data/cf-subnet.txt', 'wb') as fd:
             for chunk in r.iter_content(4000):
                 fd.write(chunk)
     else:
-        print_out(Fore.RED + Style.BRIGHT+"Unable to fetch CloudFlare subnet while TOR is active")
+        print_out(Fore.RED + Style.BRIGHT + "Unable to fetch CloudFlare subnet while TOR is active")
     print_out(Fore.CYAN + "Updating Crimeflare database...")
     r = requests.get("https://cf.ozeliurs.com/ipout", stream=True)
     with open('data/ipout', 'wb') as fd:
         for chunk in r.iter_content(4000):
             fd.write(chunk)
+
 
 # END FUNCTIONS
 
@@ -262,7 +288,7 @@ logo = """\
  | |   | |/ _ \| | | |/ _` | |_ / _` | | |
  | |___| | (_) | |_| | (_| |  _| (_| | | |
   \____|_|\___/ \__,_|\__,_|_|  \__,_|_|_|
-    v1.0.5                      by m0rtem
+    v1.0.6                      by m0rtem
 
 """
 
@@ -272,9 +298,13 @@ print_out("Initializing CloudFail - the date is: " + datestr)
 
 parser = argparse.ArgumentParser()
 parser.add_argument("-t", "--target", help="target url of website", type=str)
+parser.add_argument("-l", "--list", help="input target list file", type=str)
 parser.add_argument("-T", "--tor", dest="tor", action="store_true", help="enable TOR routing")
 parser.add_argument("-u", "--update", dest="update", action="store_true", help="update databases")
-parser.add_argument("-s", "--subdomains", help="name of alternate subdomains list stored in the data directory", type=str)
+parser.add_argument("-s", "--subdomains",
+                    help="name of alternate subdomains list stored in the data directory", type=str)
+parser.add_argument("-d", "--timeout", help="timeout in seconds (default: 10)", type=int, default=10)
+parser.add_argument("-o", "--output", help="output file name", type=str)
 parser.set_defaults(tor=False)
 parser.set_defaults(update=False)
 
@@ -299,18 +329,20 @@ if args.update is True:
     update()
 
 try:
-
     # Initialize CloudFail
-    init(args.target)
-
-    # Scan DNSdumpster.com
-    dnsdumpster(args.target)
-
-    # Scan Crimeflare database
-    crimeflare(args.target)
-
-    # Scan subdomains with or without TOR
-    subdomain_scan(args.target, args.subdomains)
+    if args.list:
+        with open(args.list, "r") as target_file:
+            for line in target_file:
+                args.target = line.strip()
+                init(args.target)
+                dnsdumpster(args.target, args.output)
+                crimeflare(args.target, args.output)
+                subdomain_scan(args.target, args.subdomains, args.output)
+    else:
+        init(args.target)
+        dnsdumpster(args.target, args.output)
+        crimeflare(args.target, args.output)
+        subdomain_scan(args.target, args.subdomains, args.output)
 
 except KeyboardInterrupt:
     sys.exit(0)
