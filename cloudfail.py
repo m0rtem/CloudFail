@@ -16,6 +16,9 @@ import platform
 from colorama import Fore, Style
 from DNSDumpsterAPI import DNSDumpsterAPI
 import dns.resolver
+import collections
+collections.Callable = collections.abc.Callable
+
 
 colorama.init(Style.BRIGHT)
 
