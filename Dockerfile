@@ -1,13 +1,6 @@
-FROM debian:sid
-
+FROM python:3.9.16-alpine3.17
 ENV LANG C.UTF-8
-ENV USER root
 ENV HOME /cloudfail
-ENV DEBIAN_FRONTEND noninteractive
-
-RUN apt-get update
-
-RUN apt-get install -yq python3-pip
 
 COPY . $HOME
 
