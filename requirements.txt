@@ -5,6 +5,6 @@ chardet==3.0.4
 colorama==0.3.9
 idna==2.5
 requests>=2.20.0
-urllib3==1.24.2
+urllib3==1.26.5
 win_inet_pton==1.0.1
 dnspython==1.15.0
