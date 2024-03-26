@@ -118,10 +118,11 @@ def crimeflare(target):
         crimeFoundArray = []
         for line in ins:
             lineExploded = line.split(" ")
-            if lineExploded[1] == args.target:
-                crimeFoundArray.append(lineExploded[2])
-            else:
-                continue
+            if(len(lineExploded) >= 3):
+                if lineExploded[1] == args.target:
+                    crimeFoundArray.append(lineExploded[2])
+                else:
+                    continue
     if (len(crimeFoundArray) != 0):
         for foundIp in crimeFoundArray:
             print_out(Style.BRIGHT + Fore.WHITE + "[FOUND:IP] " + Fore.GREEN + "" + foundIp.strip())
