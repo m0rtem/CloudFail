@@ -31,10 +31,38 @@ If this fails because of missing setuptools, do this:
 ```sudo apt-get install python3-setuptools```
 
 #### Usage
+```bash
+python3 cloudfail.py -h                                                                                                                                                        ──(Sun,Jul09)─┘
+   ____ _                 _ _____     _ _
+  / ___| | ___  _   _  __| |  ___|_ _(_) |
+ | |   | |/ _ \| | | |/ _` | |_ / _` | | |
+ | |___| | (_) | |_| | (_| |  _| (_| | | |
+  \____|_|\___/ \__,_|\__,_|_|  \__,_|_|_|
+    v1.0.6                      by m0rtem
 
+
+[12:13:59] Initializing CloudFail - the date is: 09/07/2023  
+usage: cloudfail.py [-h] [-t TARGET] [-l LIST] [-T] [-u] [-s SUBDOMAINS] [-d TIMEOUT] [-o OUTPUT]
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -t TARGET, --target TARGET
+                        target url of website
+  -l LIST, --list LIST  input target list file
+  -T, --tor             enable TOR routing
+  -u, --update          update databases
+  -s SUBDOMAINS, --subdomains SUBDOMAINS
+                        name of alternate subdomains list stored in the data directory
+  -d TIMEOUT, --timeout TIMEOUT
+                        timeout in seconds (default: 10)
+  -o OUTPUT, --output OUTPUT
+                        output file name
+```
 To run a scan against a target:
 
 ```python3 cloudfail.py --target seo.com```
+
+```python3 cloudfail.py --list target.txt```
 
 To run a scan against a target using Tor:
 
