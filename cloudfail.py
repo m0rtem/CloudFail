@@ -84,7 +84,14 @@ def subnetwork_to_ip_range(subnetwork):
 def dnsdumpster(target):
     print_out(Fore.CYAN + "Testing for misconfigured DNS using dnsdumpster...")
 
-    res = DNSDumpsterAPI(False).search(target)
+ 
+    api_key = "API_KEY"
+    
+    res = DNSDumpsterAPI(api_key=api_key, verbose=False).search(target)
+
+    if not res:
+        print_out(Fore.RED + "Failed to get results from DNSDumpster")
+        return
 
     if res['dns_records']['host']:
         for entry in res['dns_records']['host']:
@@ -259,7 +266,7 @@ def update():
 
 # END FUNCTIONS
 
-logo = """\
+logo = """
    ____ _                 _ _____     _ _
   / ___| | ___  _   _  __| |  ___|_ _(_) |
  | |   | |/ _ \| | | |/ _` | |_ / _` | | |
@@ -302,7 +309,6 @@ if args.update is True:
     update()
 
 try:
-
     # Initialize CloudFail
     init(args.target)
 
