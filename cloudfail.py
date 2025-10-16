@@ -86,29 +86,33 @@ def dnsdumpster(target):
 
     res = DNSDumpsterAPI(False).search(target)
 
-    if res['dns_records']['host']:
-        for entry in res['dns_records']['host']:
-            provider = str(entry['provider'])
-            if "Cloudflare" not in provider:
-                print_out(
-                    Style.BRIGHT + Fore.WHITE + "[FOUND:HOST] " + Fore.GREEN + "{domain} {ip} {as} {provider} {country}".format(
-                        **entry))
+    # tolerate missing/empty results
+    if isinstance(res, dict):
+        if res.get('dns_records', {}).get('host'):
+            for entry in res['dns_records']['host']:
+                provider = str(entry['provider'])
+                if "Cloudflare" not in provider:
+                    print_out(
+                        Style.BRIGHT + Fore.WHITE + "[FOUND:HOST] " + Fore.GREEN + "{domain} {ip} {as} {provider} {country}".format(
+                            **entry))
 
-    if res['dns_records']['dns']:
-        for entry in res['dns_records']['dns']:
-            provider = str(entry['provider'])
-            if "Cloudflare" not in provider:
-                print_out(
-                    Style.BRIGHT + Fore.WHITE + "[FOUND:DNS] " + Fore.GREEN + "{domain} {ip} {as} {provider} {country}".format(
-                        **entry))
+        if res.get('dns_records', {}).get('dns'):
+            for entry in res['dns_records']['dns']:
+                provider = str(entry['provider'])
+                if "Cloudflare" not in provider:
+                    print_out(
+                        Style.BRIGHT + Fore.WHITE + "[FOUND:DNS] " + Fore.GREEN + "{domain} {ip} {as} {provider} {country}".format(
+                            **entry))
 
-    if res['dns_records']['mx']:
-        for entry in res['dns_records']['mx']:
-            provider = str(entry['provider'])
-            if "Cloudflare" not in provider:
-                print_out(
-                    Style.BRIGHT + Fore.WHITE + "[FOUND:MX] " + Fore.GREEN + "{ip} {as} {provider} {domain}".format(
-                        **entry))
+        if res.get('dns_records', {}).get('mx'):
+            for entry in res['dns_records']['mx']:
+                provider = str(entry['provider'])
+                if "Cloudflare" not in provider:
+                    print_out(
+                        Style.BRIGHT + Fore.WHITE + "[FOUND:MX] " + Fore.GREEN + "{ip} {as} {provider} {domain}".format(
+                            **entry))
+    else:
+        print_out(Fore.CYAN + "DNSDumpster returned no usable data, skipping.")
 
 
 def crimeflare(target):
@@ -202,21 +206,36 @@ def subdomain_scan(target, subdomains):
         subdomainsList = subdomains
     else:
         subdomainsList = "subdomains.txt"
+
     try:
-        with open("data/" + subdomainsList, "r") as wordlist:
-            numOfLines = len(open("data/subdomains.txt").readlines())
-            numOfLinesInt = numOfLines
-            numOfLines = str(numOfLines)
+        file_path = "data/" + subdomainsList
+        with open(file_path, "r") as wordlist:
+            # read all lines from the same file we are about to scan
+            lines = [l for l in (ln.strip() for ln in wordlist) if l]
+            numOfLinesInt = len(lines)
+            numOfLines = str(numOfLinesInt)
             print_out(Fore.CYAN + "Scanning " + numOfLines + " subdomains (" + subdomainsList + "), please wait...")
-            for word in wordlist:
+            # ensure step is never zero (avoid ZeroDivisionError when <100 lines)
+            step = max(1, int(float(numOfLinesInt) / 100.0))
+
+            for word in lines:
                 c += 1
-                if (c % int((float(numOfLinesInt) / 100.0))) == 0:
-                    print_out(Fore.CYAN + str(round((c / float(numOfLinesInt)) * 100.0, 2)) + "% complete", '\r')
+                # recalc step only if you want dynamic behaviour; keeping constant is fine
+                if (c % step) == 0:
+                    # print a friendly progress percentage
+                    # guard against division by zero (numOfLinesInt > 0 guaranteed here)
+                    pct = round((c / float(numOfLinesInt)) * 100.0, 2) if numOfLinesInt > 0 else 100.0
+                    print_out(Fore.CYAN + str(pct) + "% complete", '\r')
 
                 subdomain = "{}.{}".format(word.strip(), target)
                 try:
-                    target_http = requests.get("http://" + subdomain)
-                    target_http = str(target_http.status_code)
+                    # only use timeouts on requests to avoid long hangs
+                    try:
+                        target_http_r = requests.get("http://" + subdomain, timeout=5)
+                        target_http = str(target_http_r.status_code)
+                    except requests.exceptions.RequestException:
+                        target_http = "err"
+
                     ip = socket.gethostbyname(subdomain)
                     ifIpIsWithin = inCloudFlare(ip)
 
@@ -231,6 +250,10 @@ def subdomain_scan(target, subdomains):
 
                 except requests.exceptions.RequestException as e:
                     continue
+                except socket.gaierror:
+                    # DNS did not resolve - skip
+                    continue
+
             if (i == 0):
                 print_out(Fore.CYAN + "Scanning finished, we did not find anything, sorry...")
             else:
@@ -265,7 +288,7 @@ logo = """\
  | |   | |/ _ \| | | |/ _` | |_ / _` | | |
  | |___| | (_) | |_| | (_| |  _| (_| | | |
   \____|_|\___/ \__,_|\__,_|_|  \__,_|_|_|
-    v1.0.5                      by m0rtem
+    v1.0.6                      by eMi
 
 """
 
